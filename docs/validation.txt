@@ -1,0 +1,29 @@
+PREPARATION VALIDATION - 2026-10-29
+
+All six query files were parsed successfully by Microsoft's
+@microsoft/powerquery-parser. This validates M syntax, not execution or the
+availability/semantics of each library function in Power BI Desktop.
+
+The code was reviewed against the supplied column inventory and representative
+text formats. Required columns are checked explicitly, source rows are not
+filtered or deduplicated, and derived records expand into columns, not rows.
+
+ISIR_SelfTest contains 22 native Power Query assertions over 17 synthetic rows.
+It covers malformed and ambiguous dates, missing snapshots, separate work and
+incident location fields, subsidiary prefixes, semicolon-separated assets,
+USB fallback/double-count prevention/conflicts, unknown asset labels, repeated
+asset labels, fractional quantities, missing versus zero quantities, row
+preservation, and preservation of rows regardless of workflow status.
+
+These native M assertions have NOT been executed in the preparation environment,
+which has no Power BI/Power Query evaluation engine. Run ISIR_SelfTest in Desktop.
+No live SharePoint data or employee directory was accessed.
+
+CORPORATE-SOURCE VALIDATION STILL REQUIRED
+- Equal source and parsed counts (178 at the supplied checkpoint).
+- Zero missing or duplicate SharePoint IDs.
+- Review of date extraction coverage, source-date meaning, ambiguous dates,
+  duplicate upstream IDs, fiscal definitions, and reporting completeness.
+- Review of subsidiary prefixes, loss categories and unknown LostOther formats.
+- Source-owner decisions for null quantities and headline asset-metric scope.
+- Final model, DAX, permissions and service refresh verification in later stages.

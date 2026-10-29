@@ -1,0 +1,16 @@
+# Local credentials and caches
+.env
+.env.*
+!.env.example
+node_modules/
+__pycache__/
+*.log
+.DS_Store
+Thumbs.db
+
+# Local data and Power BI caches
+*.pbix
+**/.pbi/
+/data/
+/exports/
+/local/

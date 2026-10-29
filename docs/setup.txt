@@ -1,0 +1,112 @@
+ISIR POWER QUERY STARTER - 2026-10-29
+Purpose: build and validate the first reporting transformation layer.
+This package contains code and synthetic test fixtures only. It contains no
+tenant links, credentials, incident records, or employee identities.
+
+PREREQUISITE
+Your existing connected query is named exactly stg_ISIR_Raw.
+Keep its existing SharePoint connection and all 178 source rows.
+Do not paste this package into that query or change the SharePoint list.
+
+INSTALL IN POWER BI DESKTOP
+1. Open Transform data.
+2. Home > New Source > Blank Query.
+3. Rename the query exactly as listed below.
+4. Open Home > Advanced Editor, replace ALL existing text with the contents
+   of the corresponding .pq file, and select Done.
+5. Repeat for each query. Keep Enable load OFF for all queries in this package.
+   These are staging and diagnostics, not the final published semantic model.
+
+Recommended order:
+  File                              Query name
+  powerquery/fnISIRTransform.pq             fnISIRTransform
+  powerquery/ISIR_SelfTest.pq                ISIR_SelfTest
+  powerquery/stg_ISIR_Parsed.pq              stg_ISIR_Parsed
+  powerquery/ISIR_Validation.pq              ISIR_Validation
+  powerquery/ISIR_FieldProfile.pq            ISIR_FieldProfile
+  powerquery/ISIR_Exceptions.pq              ISIR_Exceptions
+
+The function displays an invocation screen after creation. That is expected;
+do not manually invoke it. ISIR_SelfTest and stg_ISIR_Parsed invoke it.
+ISIR_SelfTest should show 22 PASS rows using synthetic data only.
+If any test fails, send the Test and Detail values before proceeding.
+
+EXPECTED SOURCE CHECKPOINT
+- Source rows: 178 (or the current count if new incidents have been added).
+- Parsed rows: equal to source rows.
+- Row count difference: 0.
+- Missing ID and duplicate ID extra rows: 0.
+- Some review flags may be legitimate and require source-owner interpretation.
+- Do not filter flagged records out of stg_ISIR_Parsed.
+- Duplicate ID checks are in ISIR_Validation, not per-row NeedsReview flags.
+- Each field's counts in ISIR_FieldProfile should sum to the current source count.
+- Power Query previews can be cached; refresh the relevant previews when checking
+  results after source changes. If source and parsed counts differ, refresh both
+  during a stable source period before interpreting the difference.
+
+WHAT THE TRANSFORM DOES
+- Requires the core columns verified in the supplied schema. Missing required
+  columns cause a clear error; missing optional workflow fields become null.
+- Preserves all source rows and both SharePoint ID and SourceItemID.
+- Uses curated Incident Category and Lost... fields. AI fields are not selected.
+- Does not filter by country, subsidiary, CaseState, or ConsistencyStatus.
+- Derives SubsidiaryCandidate from the first token of User at Fault. It does not
+  validate the token against a complete subsidiary roster or infer department.
+- Extracts Incident Date, City, State, Country and Place of Work from plain-text
+  snapshot lines with exact English labels and a colon. Matches ignore case.
+- Keeps workplace separate from snapshot city. Geographic labels remain
+  candidates until the source owner confirms what they mean.
+- Accepts year-first numeric dates such as 2026-02-09 and 2026/2/9. It rejects
+  five-digit years, impossible dates, duplicate labels, and ambiguous date order.
+- Does not substitute SubmittedDate for a missing/invalid IncidentDate.
+- Preserves the structured SubmittedDate timestamp and adds SubmittedDateOnly
+  without timezone conversion. Confirm timestamp semantics before day-level use.
+- Extracts semicolon/newline-separated USB, Access keys / badges and
+  Documents / drawings quantities from LostOther. Other labels are flagged.
+- Allows only nonnegative integer quantities; preserves nulls and explicit zeros.
+- For USB: uses structured quantity if present and valid; otherwise recognized
+  LostOther quantity. If both agree, counts once. If they disagree, leaves the
+  resolved USB quantity null and flags the conflict. Repeated USB labels are flagged.
+- KnownLostAssetCount sums available valid PC, phone, USB, badge and document
+  quantities. It is a partial recorded quantity, not a certified total. Unknown
+  types, missing quantities, and conflicts can make it incomplete.
+- HasRecordedAssetLoss indicates recognized LostItems selections or a positive
+  parsed quantity; it does not classify every security-incident type.
+
+IMPORTANT LIMITS BEFORE EXECUTIVE REPORTING
+- The observed snapshot example had Incident Date: 20206-02-09. Determine whether
+  this was a transcription typo or exists in the source. Do not automatically
+  replace it with 2026. Incident Time also looked like a date; it is not used.
+- The snapshot is upstream context and may be less curated than the reporting
+  columns. Parsed dates/locations still require validation by the data owners.
+- Null asset quantities are not converted to zero. Confirm whether nonselected
+  assets imply zero and whether unknown selected-asset quantities can be filled.
+- Never add parsed LostOther USB quantities to the structured USB column blindly.
+- Documents, badges, phones and PCs can be shown separately. Agree on what belongs
+  in a combined lost-asset metric before making it a headline KPI.
+- All reporting-ready incidents remain available, including foreign locations
+  involving US subsidiaries. Geographic country and organizational scope differ.
+- April fiscal start, FY naming convention, and period completeness cutoff are
+  pending. This package intentionally contains no FY labels or YoY formulas yet.
+- GCE SPS is not assumed to be an authoritative department name.
+- ReporterEmail is a reporter identifier, not a verified identifier for User at
+  Fault. Do not use it to attach the reporter's department to the at-fault person.
+- This package does not implement historical snapshots, refresh scheduling,
+  permissions, final dimension tables, visuals, or source replacement.
+
+NEXT CHECKPOINT TO SHARE
+1. ISIR_SelfTest: whether all 22 tests show PASS; details of any failures.
+2. ISIR_Validation: its Check/Result columns.
+3. ISIR_FieldProfile: groups for IncidentCategory, SubsidiaryCandidate, LostItems,
+   IncidentDateStatus and LostOtherStatus.
+4. Whether the five-digit year appears in SharePoint or was a typing error here.
+5. Fiscal start and FY label when confirmed; do not wait for this to run the queries.
+Inspect ISIR_Exceptions locally. Share only the minimum sanitized values needed
+to resolve a specific parser issue; full narratives and names are unnecessary.
+
+VALIDATION PERFORMED DURING PREPARATION
+See docs/validation.txt for actual checks and limits. No corporate source was accessed.
+
+REFERENCE
+Microsoft Power Query error handling:
+https://learn.microsoft.com/en-us/powerquery-m/errors
