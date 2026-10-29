@@ -13,3 +13,7 @@
 - The user replaced User-at-Fault prefix attribution with ReporterEmail -> GLOBAL_EMPLOYEE.EMAILADDRESS -> first token of ACTIVEDIRECTORYDISPLAYNAME. Treat this as Reporter Subsidiary unless the owner confirms broader incident attribution.
 - Preserve nonblank incident-level organization snapshots across runs. Normal Power BI refreshes cannot persist prior output; proposals require external storage. Keep new matches separate until an approved writer saves them.
 - Do not present a current-directory backfill as incident-time history. Record extraction date, capture time, match identity and capture basis for saved assignments.
+
+- Latest checkpoint: user is still in Transform Data. Do not assume Close & Apply, relationships, marked date table, DAX or visuals have been completed.
+- User accepts reporter-based attribution for the POC despite occasional proxy submissions. Defer optional User-at-Fault identity cross-checks; do not silently replace reporter assignments using names.
+- User explicitly supplied employee export date 2026-10-26. Preserve date precision with ReporterOrgDirectoryExtractDate rather than inventing an exact UTC extraction time. Snapshot columns have been proposed but not confirmed created.

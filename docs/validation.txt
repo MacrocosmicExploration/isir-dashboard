@@ -1,3 +1,11 @@
+USER DESKTOP CHECKPOINT - 2026-10-29
+
+The latest screenshots show all 12 reporter organization tests PASS and unchanged
+incident count. These tests establish matching behavior, not external persistence:
+existing snapshots kept is zero. The user remains in Transform Data, so model
+relationships, DAX measures and report visuals must not be reported as validated.
+The new ISIR_ReporterOrgReview is syntax checked only; run it in Desktop next.
+
 REPORTER ORGANIZATION CHECKPOINT - 2026-10-29
 
 Four new M files passed syntax validation. Their 12 synthetic self-tests must run

@@ -1,5 +1,39 @@
 REPORTER ORGANIZATION MATCHING AND PERSISTENCE
 
+CURRENT USER CHECKPOINT
+The user is still in Power Query (Transform Data). Close & Apply, relationships,
+date-table configuration, DAX measures and report pages have not been completed.
+The user supplied screenshots showing all 12 reporter organization self-tests PASS,
+178 source/preview rows, 163 proposed assignments, 11 incidents affected by duplicate
+employee email matches, four unmatched incidents, and zero persisted snapshots.
+These are counts of incidents, not necessarily counts of distinct employees.
+The employee export date was explicitly supplied as 2026-10-26; treat that as the
+extract date rather than substituting the conversation date. Exact time is unknown.
+Reporter-based attribution is accepted for the POC despite occasional proxy reports.
+
+NEXT TWO ACTIONS
+A. Add ISIR_ReporterOrgReview from powerquery/, with Enable load OFF. It should have
+   15 unresolved incident rows at this checkpoint. Inspect ReviewClassification,
+   SubsidiaryPrefixes and count columns. Click an EmployeeMatches table cell only
+   for local employee-row inspection. Matching rows are nested, not expanded;
+   no incident multiplication and no assignments are changed. Report only counts
+   by ReviewClassification; no names or email addresses are needed in chat.
+B. Identify whether snapshot columns can be added to the existing SharePoint list
+   that supplies stg_ISIR_Raw. These are real stored source columns, not Power Query
+   custom columns and not fields inside IsirSnapshot. Use the five fields in Step 5.
+   Do not close Power Query for modeling instructions yet; the next guided phase
+   follows source persistence and final model-field wiring. The 15 unresolved rows
+   may remain unassigned in the POC; they must not be removed from incident totals.
+
+OPTIONAL USER-AT-FAULT CROSS-CHECK
+Do not compare a display name directly with an email string: different text does
+not establish a different person. For now keep Reporter Subsidiary consistently
+reporter-based. A later separate check can use unique exact normalized full-display-
+name matches (or a stable employee ID) to resolve both parties, skip blank or
+ambiguous names, and flag different identities. Do not switch assignments based
+on a partial/fuzzy name match or silently mix reporter and affected-person metrics.
+
+
 PURPOSE
 Use ReporterEmail -> GLOBAL_EMPLOYEE.EMAILADDRESS and the first token of
 ACTIVEDIRECTORYDISPLAYNAME. Label this Reporter Subsidiary until the data owner
@@ -35,6 +69,7 @@ STEP 3 - ADD THESE QUERIES IN ORDER FROM powerquery/.
 2. ISIR_ReporterOrgSelfTest - Enable load OFF; expect 12 PASS rows.
 3. ISIR_ReporterOrgPreview - Enable load OFF; expected source row count unchanged.
 4. ISIR_ReporterOrgValidation - Enable load OFF; share aggregate results only.
+5. ISIR_ReporterOrgReview - Enable load OFF; local review of unresolved incidents.
 The existing parser drops ReporterEmail from its output. The preview deliberately
 reads stg_ISIR_Raw, which still has ReporterEmail. No existing query is replaced.
 FactIncident, DimDate and DimCategory remain the only loaded model tables.
@@ -57,12 +92,22 @@ names without spaces to simplify their SharePoint internal names:
 ReporterSubsidiarySnapshot       Single line of text
 ReporterEmailAtCapture           Single line of text
 ReporterOrgCapturedAtUTC         Date and time
-ReporterOrgDirectoryAsOfUTC      Date and time
+ReporterOrgDirectoryExtractDate  Date and time, configured as Date only
 ReporterOrgCaptureBasis         Single line of text
 
-If the directory export is dated only, store its date with documented precision;
-do not invent an exact extraction time. CapturedAt is the write time. DirectoryAsOf
-is the timestamp of the employee extract, not the incident date and not refresh time.
+ReporterOrgDirectoryExtractDate replaces the previously proposed, not-yet-created
+ReporterOrgDirectoryAsOfUTC column because only a date was supplied. If the earlier
+column was already created, report that before changing its schema.
+Create all five columns as optional, with no default value and no unique-value
+constraint. All fields start blank. Capture metadata is populated with an actual
+assignment, not prefilled across all incident rows. Keep them off the entry form
+if the workflow owner prefers the automation to manage them.
+In SharePoint/Microsoft Lists: open the curated incident list > + Add column >
+choose the type > enter the exact field name > configure options > Save.
+CapturedAt is the actual write time. DirectoryExtractDate is 2026-10-26 for the
+current export, not the incident date or refresh date. Do not invent an exact
+export time. SharePoint may display timestamp columns in the site's local zone;
+the writer should submit an explicit UTC timestamp for CapturedAtUTC.
 CaptureBasis distinguishes initial current-directory backfill from later first
 capture. The SubsidiarySnapshot remains blank when no reliable match exists.
 Do not write placeholder text such as Unknown, N/A or Unmapped into the saved field;
@@ -110,10 +155,12 @@ the approved query exposing the same two columns. The saved assignments remain
 unchanged, and unresolved/new incidents use the directory available at capture.
 
 DECISIONS NEEDED BEFORE PUBLISHING
-- Is reporter organization the requested reporting attribution, including people
-  who submit on behalf of someone else?
+- Reporter organization is accepted by the user for this POC. Keep that meaning
+  visible in labels; broader affected-person attribution remains a later decision.
 - Can the list owner add the snapshot columns to the curated list?
-- When was the CSV exported, and what prefixes appear in the validation output?
+- Export date is supplied as 2026-10-26. Observed proposed prefixes are TEA, TMEA,
+  TEH, TKL, TTCA and TTAD; retain all source incidents rather than applying a
+  geography/subsidiary exclusion based on these candidates.
 - Does the owner approve current-directory backfill for older incidents, or is
   historical employee data/incident-specific review required?
 

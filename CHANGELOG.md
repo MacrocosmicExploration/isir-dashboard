@@ -1,5 +1,15 @@
 # Change history
 
+## 2026-10-29 — Unresolved match review and source-column clarification
+
+- Recorded the user's Desktop checkpoint: still in Transform Data; relationships, date-table setup, DAX and visuals remain undone.
+- Recorded all 12 native organization tests passing, 163 proposed assignments, 11 incidents with duplicate employee matches, four unmatched incidents, and zero persisted assignments.
+- Added ISIR_ReporterOrgReview, retaining one row per unresolved incident with nested employee matches and duplicate classifications. Matching and assignment rules are unchanged.
+- Clarified that snapshot columns belong to the curated SharePoint list, not inside Power Query or IsirSnapshot. Columns are optional and start blank.
+- Replaced the proposed directory timestamp column with ReporterOrgDirectoryExtractDate (date only), using the user's explicit export date of 2026-10-26 without inventing an extraction time.
+- Kept reporter attribution for the POC. Deferred any User-at-Fault identity cross-check; a name/email string inequality is not evidence of different identities.
+- Desktop action: add only ISIR_ReporterOrgReview, with Enable load OFF. Existing matching queries do not need replacement. Review-query syntax passed; native execution pending.
+
 ## 2026-10-29 — Reporter organization matching and snapshot design
 
 - Added read-only email matching against the exported GLOBAL_EMPLOYEE CSV.

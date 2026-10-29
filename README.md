@@ -2,7 +2,19 @@
 
 Power Query transformations and validation for an incident-reporting Power BI proof of concept. This repository is the working source for future ISIR queries, DAX measures, and setup instructions.
 
-## Current step: reporter organization matching
+## Current checkpoint: still in Transform Data
+
+The 12 reporter organization self-tests passed in Desktop. Matching preserved all
+178 incident rows: 163 proposed assignments, 11 incidents affected by duplicate
+email matches and four unmatched incidents. No assignments have been persisted.
+Relationships, DAX and report visuals have not been built yet.
+
+Next, add [ISIR_ReporterOrgReview](powerquery/ISIR_ReporterOrgReview.pq) with load OFF
+and follow the updated [source-column and review steps](docs/reporter-org-setup.txt).
+Only one new query is needed; existing matching queries are unchanged.
+The review query has been syntax checked; native execution remains pending.
+
+## Reporter organization matching
 
 Use the exported employee CSV to match `ReporterEmail` to `EMAILADDRESS` and
 extract the first token of `ACTIVEDIRECTORYDISPLAYNAME`. Follow the
@@ -25,7 +37,7 @@ Import the CSV as `stg_GLOBAL_EMPLOYEE_Raw` (Enable load OFF), retaining
 | 3 | `ISIR_ReporterOrgPreview` | OFF | [Code](powerquery/ISIR_ReporterOrgPreview.pq) |
 | 4 | `ISIR_ReporterOrgValidation` | OFF | [Code](powerquery/ISIR_ReporterOrgValidation.pq) |
 
-The new self-test should return 12 PASS rows; native execution remains pending.
+The reporter-organization self-test returned all 12 PASS rows in the user's Desktop screenshots.
 No existing query needs replacement. No writeback automation has been deployed.
 Keep only `FactIncident`, `DimDate`, and `DimCategory` loaded for now. The original
 User-at-Fault subsidiary audit is superseded for attribution; it may remain unloaded.
@@ -79,7 +91,7 @@ The function's invocation screen is expected; do not invoke it manually. Create 
 
 ## Current checkpoint
 
-- All fourteen Power Query files passed Microsoft's Power Query syntax parser. New reporter-organization tests still require native execution in Desktop.
+- All fifteen Power Query files have passed Microsoft's Power Query syntax parser. The user has passed the original 22 and reporter-organization 12 native tests. The new review query still requires Desktop execution.
 - The user reported all 22 native starter assertions passed in Desktop; supplied diagnostics reconcile source and parsed rows with no missing or duplicate IDs.
 - Source and parsed row counts must match. Missing and duplicate SharePoint IDs must be investigated.
 - Review flags do not remove incidents. Inspect `ISIR_Exceptions` locally.
