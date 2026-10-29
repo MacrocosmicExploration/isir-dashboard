@@ -1,3 +1,13 @@
+CURRENT ENTRY POINT
+First complete docs/reporter-org-setup.txt for active-only email matching and the
+separate saved snapshot workbook. The source SharePoint list remains unchanged.
+After capture, replace FactIncident and add DimReporterSubsidiary. Keep those two
+plus DimDate and DimCategory loaded. This extends the original model steps below.
+Add a third active, Single relationship:
+DimReporterSubsidiary[ReporterSubsidiaryKey] (1) -> FactIncident[ReporterSubsidiaryKey] (*)
+Use ReporterSubsidiary from that dimension in visuals; include Unassigned.
+Only saved assignments enter FactIncident, never a current directory fallback.
+
 ISIR MODEL SETUP - STEP 2
 
 The existing six queries do not need replacement. The user reported all 22
@@ -15,10 +25,11 @@ The new model queries have been syntax checked; Desktop execution remains pendin
    d) ISIR_SubsidiaryAudit   powerquery/ISIR_SubsidiaryAudit.pq
    Do not invoke fnISIRTransform manually. Do not change stg_ISIR_Raw.
 
-3. ENABLE LOAD: CHECK ONLY THESE THREE ISIR TABLES.
+3. ENABLE LOAD: CHECK ONLY THESE FOUR ISIR TABLES.
    FactIncident = ON
    DimDate = ON
    DimCategory = ON
+   DimReporterSubsidiary = ON
 
    All ISIR helpers = OFF:
    stg_ISIR_Raw, stg_ISIR_Parsed, ISIR_SelfTest, ISIR_Validation,
@@ -27,17 +38,18 @@ The new model queries have been syntax checked; Desktop execution remains pendin
    leave it as a function (no model table to load).
 
    Right-click the query name to toggle Enable load. Do not delete helpers.
-   Leave Include in report refresh enabled for the three model tables.
+   Leave Include in report refresh enabled for the four model tables.
    Disable-load staging queries still run when a loaded query depends on them.
    These instructions apply to the ISIR query set, not unrelated existing tables.
    If a query already feeds a visual, disabling load removes that model table;
    repoint that visual to the new model before expecting it to work.
 
-4. CLICK CLOSE & APPLY, THEN BUILD TWO RELATIONSHIPS IN MODEL VIEW.
+4. CLICK CLOSE & APPLY, THEN BUILD THREE RELATIONSHIPS IN MODEL VIEW.
    DimDate[Date] (1) -> FactIncident[IncidentDate] (*)
    DimCategory[CategoryKey] (1) -> FactIncident[CategoryKey] (*)
-   Both active, cross-filter direction Single (dimension to fact).
-   Delete unintended auto-created relationships among these three tables first.
+   Also add the ReporterSubsidiary relationship listed above.
+   All active, cross-filter direction Single (dimension to fact).
+   Delete unintended auto-created relationships among these four tables first.
    Do not create an active relationship to SubmittedDate.
 
 5. CONFIGURE THE DATE TABLE AND DISPLAY FIELDS.

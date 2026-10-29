@@ -1,3 +1,16 @@
+ACTIVE MATCHING AND SEPARATE SNAPSHOT UPDATE - 2026-10-29
+
+All 20 M files pass Microsoft Power Query syntax parsing. The revised organization
+suite contains 30 native assertions; its execution is still required in Desktop.
+The original 22 tests and the former 12 organization checks passed in the user's
+Desktop. That does not validate this new active/alias/snapshot implementation.
+No employee CSV or saved workbook was accessed in the preparation environment.
+The source list remains unchanged. Read-back after manually saving a workbook
+must show saved assignments kept and no repeated proposals for those same rows.
+Follow reporter-org-setup.txt for the exact install and verification sequence.
+
+--- Earlier checkpoint history follows ---
+
 USER DESKTOP CHECKPOINT - 2026-10-29
 
 The latest screenshots show all 12 reporter organization tests PASS and unchanged

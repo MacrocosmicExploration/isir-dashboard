@@ -1,5 +1,9 @@
+CURRENT WORKFLOW: Follow reporter-org-setup.txt, then model-setup.txt.
+Do not add snapshot columns to the original SharePoint list. Use the separate
+snapshot workbook and load four final tables including DimReporterSubsidiary.
+
 CONTINUATION: After the original self-tests and diagnostics, follow model-setup.txt.
-Only FactIncident, DimDate and DimCategory should load into the model.
+Only FactIncident, DimDate, DimCategory and DimReporterSubsidiary should load into the model.
 The instructions below document the original staging/diagnostic package.
 
 ISIR POWER QUERY STARTER - 2026-10-29

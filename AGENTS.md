@@ -16,4 +16,8 @@
 
 - Latest checkpoint: user is still in Transform Data. Do not assume Close & Apply, relationships, marked date table, DAX or visuals have been completed.
 - User accepts reporter-based attribution for the POC despite occasional proxy submissions. Defer optional User-at-Fault identity cross-checks; do not silently replace reporter assignments using names.
-- User explicitly supplied employee export date 2026-10-26. Preserve date precision with ReporterOrgDirectoryExtractDate rather than inventing an exact UTC extraction time. Snapshot columns have been proposed but not confirmed created.
+- User explicitly supplied employee export date 2026-10-26. Preserve date precision with ReporterOrgDirectoryExtractDate rather than inventing an exact UTC extraction time. The SharePoint snapshot-column proposal is superseded; the user wants the original list unchanged.
+
+- Do not add snapshot columns or write assignments to the original SharePoint list for this POC. Use a separate values-only Excel snapshot workbook keyed by SourceItemID; clearly distinguish manual capture from automated query refresh.
+- Only EMPLOYEE_STATUS = Active rows qualify for new directory assignments. Prefer exact email, then same-local-part tel.com/us.tel.com fallback only with no exact active match. Multiple active matches remain blocked; do not guess a latest row.
+- Final reporter organization fields must come only from saved incident snapshots. Preserve nonblank values and prior rows when adding assignments. Keep snapshot-file connections configured once established.

@@ -1,5 +1,15 @@
 # Change history
 
+## 2026-10-29 — Active-only matching, TEL aliases, and separate POC snapshot
+
+- Adopted the user's source rule: only EMPLOYEE_STATUS = Active rows are eligible. Multiple active matches remain blocked.
+- Added exact-email-first matching with tel.com/us.tel.com fallback only when no active exact match exists. Preserved match method and matched address for traceability.
+- Replaced the 12-test organization suite with 30 native regression checks for active/inactive handling, aliases, ambiguity, saved assignment preservation, row counts and snapshot keys.
+- Superseded the SharePoint-column proposal. The source list is unchanged. Added a separate values-only workbook workflow with blank-only additions and SourceItemID keys; persistence is manual for the POC.
+- Added snapshot attach, empty/file staging, extract-date parameter, additions query and DimReporterSubsidiary. Updated FactIncident to consume saved assignments only.
+- Updated validation and review for active matching. All 20 M files pass syntax checks; new native tests and workbook integration remain pending in Desktop.
+- Desktop replacement order and final four-table load settings are in README and docs/reporter-org-setup.txt. Preserve existing configured workbook paths on later updates.
+
 ## 2026-10-29 — Unresolved match review and source-column clarification
 
 - Recorded the user's Desktop checkpoint: still in Transform Data; relationships, date-table setup, DAX and visuals remain undone.

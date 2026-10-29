@@ -1,170 +1,155 @@
-REPORTER ORGANIZATION MATCHING AND PERSISTENCE
+ACTIVE EMPLOYEE MATCHING AND TEMPORARY SAVED ASSIGNMENTS
 
-CURRENT USER CHECKPOINT
-The user is still in Power Query (Transform Data). Close & Apply, relationships,
-date-table configuration, DAX measures and report pages have not been completed.
-The user supplied screenshots showing all 12 reporter organization self-tests PASS,
-178 source/preview rows, 163 proposed assignments, 11 incidents affected by duplicate
-employee email matches, four unmatched incidents, and zero persisted snapshots.
-These are counts of incidents, not necessarily counts of distinct employees.
-The employee export date was explicitly supplied as 2026-10-26; treat that as the
-extract date rather than substituting the conversation date. Exact time is unknown.
-Reporter-based attribution is accepted for the POC despite occasional proxy reports.
+CURRENT APPROACH
+The original SharePoint list stays unchanged. Reporter-based attribution is accepted
+for this POC. The user is still in Transform Data; model relationships, measures
+and visuals have not been completed. This guide supersedes the earlier proposal
+to add snapshot columns to SharePoint.
 
-NEXT TWO ACTIONS
-A. Add ISIR_ReporterOrgReview from powerquery/, with Enable load OFF. It should have
-   15 unresolved incident rows at this checkpoint. Inspect ReviewClassification,
-   SubsidiaryPrefixes and count columns. Click an EmployeeMatches table cell only
-   for local employee-row inspection. Matching rows are nested, not expanded;
-   no incident multiplication and no assignments are changed. Report only counts
-   by ReviewClassification; no names or email addresses are needed in chat.
-B. Identify whether snapshot columns can be added to the existing SharePoint list
-   that supplies stg_ISIR_Raw. These are real stored source columns, not Power Query
-   custom columns and not fields inside IsirSnapshot. Use the five fields in Step 5.
-   Do not close Power Query for modeling instructions yet; the next guided phase
-   follows source persistence and final model-field wiring. The 15 unresolved rows
-   may remain unassigned in the POC; they must not be removed from incident totals.
+Use a separate, values-only Excel workbook to keep incident assignments until the
+future pipeline provides persistent storage. Power BI reads the workbook; it does
+not write to it. Saving new assignments is a manual POC step. The extraction and
+matching logic is automated; persistence is not yet scheduled or automatic.
+Do not overwrite the saved table with a full freshly recomputed directory join.
 
-OPTIONAL USER-AT-FAULT CROSS-CHECK
-Do not compare a display name directly with an email string: different text does
-not establish a different person. For now keep Reporter Subsidiary consistently
-reporter-based. A later separate check can use unique exact normalized full-display-
-name matches (or a stable employee ID) to resolve both parties, skip blank or
-ambiguous names, and flag different identities. Do not switch assignments based
-on a partial/fuzzy name match or silently mix reporter and affected-person metrics.
+MATCHING RULES
+1. Keep only employee rows whose trimmed, case-insensitive EMPLOYEE_STATUS is Active.
+   This filters directory eligibility, never the incident population.
+2. Normalize email case and surrounding whitespace. Use an exact active match first.
+3. Only when there are zero active exact matches, try the SAME local part under
+   the alternate domain: tel.com <-> us.tel.com. Never strip domains generally.
+4. Multiple active rows at the selected email remain ambiguous, even if identical.
+   An ambiguous exact match does not fall through to the other domain.
+5. Preserve every populated saved incident assignment. Current directory moves,
+   inactive/departed employees and directory ambiguities do not erase it.
+6. Missing/no-active/ambiguous matches stay unassigned and eligible for later review.
+   Active is an eligibility rule, not a timestamp that ranks multiple active rows.
 
+Email aliases are recorded as TEL domain alias. Review these proposed cases once
+before saving: matching local parts are a controlled business assumption, not a
+general proof of identity across domains. Exact active addresses take priority.
+A current Active record represents the organization at directory extraction time,
+not necessarily at an older incident's occurrence date.
 
-PURPOSE
-Use ReporterEmail -> GLOBAL_EMPLOYEE.EMAILADDRESS and the first token of
-ACTIVEDIRECTORYDISPLAYNAME. Label this Reporter Subsidiary until the data owner
-confirms reporter is the intended person for incident organization attribution.
-Never equate this automatically with User at Fault, incident location, or department.
+A. RETAIN EMPLOYEE_STATUS IN YOUR EXISTING CSV QUERY
+Open stg_GLOBAL_EMPLOYEE_Raw. If an Applied Step named Removed Other Columns or
+Choose Columns kept only two fields, edit that step to retain all three:
+EMAILADDRESS
+ACTIVEDIRECTORYDISPLAYNAME
+EMPLOYEE_STATUS
+Set all three to Text. Keep Enable load OFF. Do not remove duplicates manually.
+Do not edit or replace the CSV contents to normalize domains.
 
-IMPORTANT: A POWER BI REFRESH IS NOT A SNAPSHOT WRITER.
-The queries below are read-only previews. They do not save assignments or freeze
-history. A prior Power Query result is not the next refresh's input. An IF blank
-expression against a fresh merge cannot preserve a value from last refresh.
-The proposal changes if the employee CSV changes until it is saved externally.
-Do not wire the proposal directly into the published report and call it historical.
+B. INSTALL/REPLACE QUERIES IN THIS ORDER
+Use the exact filenames in powerquery/ as the query names without .pq.
+Create NEW queries as Blank Query, then paste the entire file into Advanced Editor.
+For REPLACE, replace the existing query's code; do not create a duplicate name.
 
-STEP 1 - KEEP THE ORIGINAL EMPLOYEE EXPORT.
-Keep the dated CSV in approved work storage. Record the actual export timestamp
-or date; do not substitute the later Power BI refresh time. Keep the file inside
-the company environment, outside this source-code repository.
-A current directory export gives current organization, not historical membership
-for incidents from prior years. Label the initial backfill accordingly.
+1. NEW     fnISIRAttachOrgSnapshot          Function; no load
+2. NEW     stg_ISIR_OrgSnapshot_Raw         OFF; initially empty path
+3. NEW     pEmployeeDirectoryExtractDate   Parameter; no load
+4. REPLACE fnISIRReporterOrgMatch          Function; no load
+5. REPLACE ISIR_ReporterOrgSelfTest        OFF; expect 30 PASS rows
+6. REPLACE ISIR_ReporterOrgPreview         OFF
+7. REPLACE ISIR_ReporterOrgValidation      OFF
+8. REPLACE ISIR_ReporterOrgReview          OFF
+9. NEW     ISIR_ReporterOrgSnapshotAdditions OFF
 
-STEP 2 - IMPORT THE CSV.
-Power BI Desktop > Get data > Text/CSV > select the file > Transform Data.
-Verify delimiter/encoding and that the display name's comma does not split it
-across columns. UTF-8 is appropriate if the actual export uses UTF-8.
-Name the query stg_GLOBAL_EMPLOYEE_Raw.
-Keep only EMAILADDRESS and ACTIVEDIRECTORYDISPLAYNAME, with both typed Text.
-Do not remove duplicates before diagnostics. Disable Enable load.
-Import a single dated file, not an automatically combined folder of all exports.
-No local file path is embedded in the repository code.
+Do not overwrite an already connected stg_ISIR_OrgSnapshot_Raw with the bootstrap
+file on later updates. Retain the workbook path after the first capture.
+The extract-date parameter is 2026-10-26, as explicitly supplied by the user.
+Update it when replacing the employee CSV with a newer export. Do not use refresh
+date as the directory's export date. No exact export time has been assumed.
+The original 22 ISIR_SelfTest assertions are unchanged; they need not be repeated.
+The former 12-test organization suite is replaced by 30 checks for the changed logic.
 
-STEP 3 - ADD THESE QUERIES IN ORDER FROM powerquery/.
-1. fnISIRReporterOrgMatch - function, no load.
-2. ISIR_ReporterOrgSelfTest - Enable load OFF; expect 12 PASS rows.
-3. ISIR_ReporterOrgPreview - Enable load OFF; expected source row count unchanged.
-4. ISIR_ReporterOrgValidation - Enable load OFF; share aggregate results only.
-5. ISIR_ReporterOrgReview - Enable load OFF; local review of unresolved incidents.
-The existing parser drops ReporterEmail from its output. The preview deliberately
-reads stg_ISIR_Raw, which still has ReporterEmail. No existing query is replaced.
-FactIncident, DimDate and DimCategory remain the only loaded model tables.
-Do not use ISIR_SubsidiaryAudit/User-at-Fault candidates for future attribution.
+C. VERIFY MATCHING BEFORE CAPTURE
+Run the new ISIR_ReporterOrgSelfTest: 30 PASS expected. Refresh the preview and
+validation. Source and preview rows must remain equal (178 at the known checkpoint).
+Review Active exact email matches, Active TEL-domain alias matches, Ambiguous active
+matches and No active match. Prior counts of 163/11/4 came from the old logic;
+do not expect them to remain the same or assume all 178 now match.
+Use ISIR_ReporterOrgReview for unresolved incidents; ActiveEmployeeMatches contains
+only the active rows relevant to the selected lookup address. It remains unloaded.
+In ISIR_ReporterOrgPreview, filter MatchMethod to TEL domain alias to inspect those
+assignments locally, then clear the filter. Do not permanently filter the preview.
 
-STEP 4 - REVIEW THE AGGREGATES.
-Row count difference must be zero. Review match coverage and the proposed prefix
-frequencies. TEL stays TEL: do not relabel it TEA or another subsidiary implicitly.
-Only one directory row per trimmed, lowercase email can propose a value. Duplicate
-emails block new assignment even when the display-name strings look identical;
-confirm active/status rules rather than selecting an arbitrary employee record.
-Null, unmatched and unsupported names stay unresolved. A proposed prefix must be
-reviewed against the organization's actual subsidiary codes before initial capture.
-The preview contains row identifiers and normalized emails; keep it local.
+D. SAVE THE FIRST ASSIGNMENTS AS LITERAL VALUES
+1. Open ISIR_ReporterOrgSnapshotAdditions. It contains eligible assignments for
+   incidents whose saved assignment is blank. Note its row count.
+2. At the current scale (at most 178 incidents), use the table menu in the upper-left
+   of the Power Query preview > Copy Entire Table. Paste into a new Excel workbook
+   as values, including the column headers. Check the pasted row count equals the
+   additions query count. Preview copying is not a scalable full-data export; if
+   the result exceeds the preview limit, use a full export instead.
+3. Select the pasted range > Ctrl+T > My table has headers. Name the Excel table
+   ISIR_OrgSnapshot under Table Design. Save as ISIR_OrgSnapshot.xlsx in approved
+   corporate storage. Keep the file outside the source-code repository.
+4. Retain the SourceItemID column as whole numbers, DirectoryExtractDate as a date,
+   and CapturedAtUTC as text (ISO UTC with Z). Keep both email columns as text.
+   CapturedAtUTC records when the proposal was generated, not the workbook save time.
+5. In stg_ISIR_OrgSnapshot_Raw Advanced Editor, replace only the empty value of
+   SnapshotFilePath with the workbook's full local or network path. M uses literal
+   backslashes, e.g. SnapshotFilePath = "C:\Work\ISIR\ISIR_OrgSnapshot.xlsx"
+   (Use your actual path with normal single backslashes in the M string.)
+   The query reads the named Excel TABLE, not a worksheet or suggested range.
+   Close the Excel workbook after saving, then refresh the staging query.
+6. Refresh ISIR_ReporterOrgPreview and ISIR_ReporterOrgValidation. For an unchanged
+   source and directory, Existing snapshots kept must equal the saved row count,
+   and New proposed fills should be zero. Unresolved incidents stay in the source.
+   This verifies persistence; passing matching self-tests alone does not.
 
-STEP 5 - PERSIST ON THE CURATED SHAREPOINT INCIDENT ROW (RECOMMENDED).
-Confirm permission with the list owner to add these columns, using the exact
-names without spaces to simplify their SharePoint internal names:
+If there are zero eligible additions, do not manufacture assignments. An empty
+snapshot remains valid while unresolved matches are investigated.
+The snapshot workbook is tied to this single ISIR source. SourceItemID is its
+incident key, not email. Preserve those IDs during pipeline migration; introduce
+a source namespace if combining multiple source systems with overlapping IDs.
 
-ReporterSubsidiarySnapshot       Single line of text
-ReporterEmailAtCapture           Single line of text
-ReporterOrgCapturedAtUTC         Date and time
-ReporterOrgDirectoryExtractDate  Date and time, configured as Date only
-ReporterOrgCaptureBasis         Single line of text
+E. FUTURE CAPTURES DURING THE POC
+After updating source data or the employee extract, refresh and review the additions.
+Back up the saved workbook before editing. Append only previously absent SourceItemID
+values. If a row with that ID exists but its subsidiary is blank, fill that row after
+review; do not append a duplicate. Never replace nonblank assignments automatically.
+An exact duplicate key makes the query fail visibly rather than choosing a row.
+Retain older saved rows even if they are temporarily absent from the source report.
+Save, refresh, and check that the corresponding proposals disappear. Power BI never
+writes these changes itself. The future pipeline can replace this manual capture
+with an idempotent insert/fill-only operation using the same incident key and columns.
+A deliberate correction of an incorrect saved assignment should be documented.
 
-ReporterOrgDirectoryExtractDate replaces the previously proposed, not-yet-created
-ReporterOrgDirectoryAsOfUTC column because only a date was supplied. If the earlier
-column was already created, report that before changing its schema.
-Create all five columns as optional, with no default value and no unique-value
-constraint. All fields start blank. Capture metadata is populated with an actual
-assignment, not prefilled across all incident rows. Keep them off the entry form
-if the workflow owner prefers the automation to manage them.
-In SharePoint/Microsoft Lists: open the curated incident list > + Add column >
-choose the type > enter the exact field name > configure options > Save.
-CapturedAt is the actual write time. DirectoryExtractDate is 2026-10-26 for the
-current export, not the incident date or refresh date. Do not invent an exact
-export time. SharePoint may display timestamp columns in the site's local zone;
-the writer should submit an explicit UTC timestamp for CapturedAtUTC.
-CaptureBasis distinguishes initial current-directory backfill from later first
-capture. The SubsidiarySnapshot remains blank when no reliable match exists.
-Do not write placeholder text such as Unknown, N/A or Unmapped into the saved field;
-that would be nonblank and therefore protected from automatic filling.
+F. FINISH THE MODEL QUERIES AFTER CAPTURE
+10. REPLACE FactIncident from powerquery/FactIncident.pq; keep Enable load ON.
+11. NEW DimReporterSubsidiary from powerquery/DimReporterSubsidiary.pq; load ON.
+FactIncident reads saved subsidiary values ONLY. Blank values become Unassigned
+in the dimension; there is no live-directory fallback that could rewrite history.
+All incident rows and previous count logic remain. Employee emails/names do not
+load into the reporting fact table.
 
-Use the existing Logic App/approved upstream job to write the matched value once.
-The writer needs a supported way to read the approved employee extract, or later
-Snowflake. The PBI local-file connection alone does not make it available to a flow.
-If adding columns is not permitted, use a restricted sidecar SharePoint list with
-a unique incident key; include a fixed source namespace as well as SourceItemID
-when multiple source systems/lists can share identifiers. Do not key by email.
-The current inventory has unique SourceItemID values; preserve that source key
-through migration and use SharePoint ID only to address the current list item.
+ENABLE LOAD: ONLY THESE FOUR TABLES
+FactIncident
+DimDate
+DimCategory
+DimReporterSubsidiary
+Every stg_ query, diagnostic, review, additions query, function and parameter stays
+unloaded. Leave Include in report refresh enabled on the four reporting tables.
 
-WRITER CONTRACT - IMPLEMENT IN THE APPROVED UPSTREAM PROCESS
-1. Read only incidents with a truly blank snapshot field.
-2. Normalize ReporterEmail and require one directory match and a reviewed prefix.
-3. Immediately before writing, re-read the incident, snapshot and reporter email.
-4. If snapshot is now nonblank, skip. If email changed, recompute or retry.
-5. Conditionally update only the snapshot and capture metadata using the item's
-   current ETag (compare-and-set). Do not use wildcard overwrite. On concurrency
-   failure re-read and repeat the blank check. Do not overwrite another writer.
-6. Write subsidiary and all capture metadata together. Failures must not produce
-   a populated subsidiary with misleading metadata.
-7. Rerunning against an already filled incident must make no changes. Unmatched
-   and duplicate-email cases stay blank and can be retried after data improves.
-8. Audit counts and errors without logging full employee exports. Refresh Power BI
-   after successful persistence. A normal PBI refresh must not trigger writeback.
-9. Corrections to a wrong assignment are a deliberate audited owner operation,
-   not an automatic response to directory movement or a changed reporter email.
+G. LEAVE TRANSFORM DATA AND CREATE RELATIONSHIPS
+Once the current matching tests pass and snapshot read-back reconciles, Close & Apply.
+In Model view, remove unintended auto-created links among these four tables and add:
+DimDate[Date] (1) -> FactIncident[IncidentDate] (*)
+DimCategory[CategoryKey] (1) -> FactIncident[CategoryKey] (*)
+DimReporterSubsidiary[ReporterSubsidiaryKey] (1) -> FactIncident[ReporterSubsidiaryKey] (*)
+All active, Single direction from dimension to fact. No employee-table relationship
+and no active SubmittedDate relationship are required.
+Then follow docs/model-setup.txt for date-table marking, sort columns, measures and
+QA cards. Total incidents remains 178 at the source checkpoint; category/asset/date
+counts remain as previously supplied. Subsidiary bars must sum to all incidents,
+including Unassigned. Do not infer geography or exclude incidents from prefix names.
 
-No writeback automation is configured or deployed by this query package. Its
-connector/authentication and source access must be confirmed with the list owner.
-The first saved population can be a reviewed one-time update through the approved
-list workflow; after persistence, later PBI refreshes read those same saved values.
-A manual first backfill alone does not automate future blank fills.
-
-AFTER PERSISTENCE IS AVAILABLE
-Expose the saved fields in stg_ISIR_Raw and rerun the preview. Saved rows should
-show Keep existing snapshot, even if the directory changes or the employee leaves.
-Then extend FactIncident and add DimReporterSubsidiary, sourced from the saved
-snapshot only. No live directory fallback in the final reporting field.
-When Snowflake access is ready, replace stg_GLOBAL_EMPLOYEE_Raw's CSV source with
-the approved query exposing the same two columns. The saved assignments remain
-unchanged, and unresolved/new incidents use the directory available at capture.
-
-DECISIONS NEEDED BEFORE PUBLISHING
-- Reporter organization is accepted by the user for this POC. Keep that meaning
-  visible in labels; broader affected-person attribution remains a later decision.
-- Can the list owner add the snapshot columns to the curated list?
-- Export date is supplied as 2026-10-26. Observed proposed prefixes are TEA, TMEA,
-  TEH, TKL, TTCA and TTAD; retain all source incidents rather than applying a
-  geography/subsidiary exclusion based on these candidates.
-- Does the owner approve current-directory backfill for older incidents, or is
-  historical employee data/incident-specific review required?
+Operational note: a local workbook/CSV connection is sufficient for Desktop. Service
+refresh needs an approved accessible source or gateway; configure that during the
+publishing step. Do not assume the service can access the laptop path.
 
 References:
-https://learn.microsoft.com/en-us/power-bi/guidance/star-schema
-https://learn.microsoft.com/en-us/power-query/connectors/text-csv
-https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/working-with-lists-and-list-items-with-rest
+https://learn.microsoft.com/en-us/power-query/connectors/excel
+https://learn.microsoft.com/en-us/powerquery-m/table-nestedjoin
