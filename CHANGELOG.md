@@ -1,5 +1,16 @@
 # Change history
 
+## 2026-10-29 — Reporter organization matching and snapshot design
+
+- Added read-only email matching against the exported GLOBAL_EMPLOYEE CSV.
+- Normalized email whitespace/case, blocked ambiguous duplicate matches, preserved input row counts, and proposed first-token directory prefixes for review.
+- Preserved existing nonblank ReporterSubsidiarySnapshot values; flagged subsequent directory or reporter-email changes without proposing overwrites.
+- Added aggregate diagnostics and 12 synthetic native M checks for matching, missing values, row preservation, and historical-value preservation.
+- Documented incident-level SharePoint persistence, capture provenance, and conditional fill-only writes. No writer has been deployed; query proposals alone do not freeze history.
+- Distinguished reporter organization from affected-person organization and current-directory backfill from incident-time history.
+- Desktop action: import the employee CSV as stg_GLOBAL_EMPLOYEE_Raw, then add the four new queries in README order. Keep all new queries unloaded. Existing queries and model tables are unchanged.
+- Validation: M syntax passed; new native tests and CSV matching remain pending in Desktop.
+
 ## 2026-10-29 — Reporting model and load configuration
 
 - Recorded user-reported success of the original 22 native self-tests and source reconciliation.

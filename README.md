@@ -2,7 +2,36 @@
 
 Power Query transformations and validation for an incident-reporting Power BI proof of concept. This repository is the working source for future ISIR queries, DAX measures, and setup instructions.
 
-## Current step: load the reporting model
+## Current step: reporter organization matching
+
+Use the exported employee CSV to match `ReporterEmail` to `EMAILADDRESS` and
+extract the first token of `ACTIVEDIRECTORYDISPLAYNAME`. Follow the
+[reporter organization setup guide](docs/reporter-org-setup.txt).
+
+The matching queries are **read-only previews**, not snapshot storage. To freeze
+an assignment, persist it on the SharePoint incident row using the approved
+upstream workflow. A refresh of Power Query alone cannot remember last refresh's
+value. Initial assignments from a current directory are backfills, not proven
+incident-time organization history. Keep the reporting label **Reporter Subsidiary**
+until the owner confirms that is the intended attribution.
+
+Import the CSV as `stg_GLOBAL_EMPLOYEE_Raw` (Enable load OFF), retaining
+`EMAILADDRESS` and `ACTIVEDIRECTORYDISPLAYNAME` as text, then create:
+
+| Order | Query | Enable load | Code |
+| --- | --- | --- | --- |
+| 1 | `fnISIRReporterOrgMatch` | Function | [Code](powerquery/fnISIRReporterOrgMatch.pq) |
+| 2 | `ISIR_ReporterOrgSelfTest` | OFF | [Code](powerquery/ISIR_ReporterOrgSelfTest.pq) |
+| 3 | `ISIR_ReporterOrgPreview` | OFF | [Code](powerquery/ISIR_ReporterOrgPreview.pq) |
+| 4 | `ISIR_ReporterOrgValidation` | OFF | [Code](powerquery/ISIR_ReporterOrgValidation.pq) |
+
+The new self-test should return 12 PASS rows; native execution remains pending.
+No existing query needs replacement. No writeback automation has been deployed.
+Keep only `FactIncident`, `DimDate`, and `DimCategory` loaded for now. The original
+User-at-Fault subsidiary audit is superseded for attribution; it may remain unloaded.
+The final model will consume saved snapshots after persistence is configured.
+
+## Reporting model setup
 
 The original 22 self-tests passed in Power BI Desktop, as reported by the user.
 The source and parsed tables reconcile, and source IDs passed the missing/duplicate checks.
@@ -50,7 +79,7 @@ The function's invocation screen is expected; do not invoke it manually. Create 
 
 ## Current checkpoint
 
-- The six original and four new queries passed Microsoft's Power Query syntax parser.
+- All fourteen Power Query files passed Microsoft's Power Query syntax parser. New reporter-organization tests still require native execution in Desktop.
 - The user reported all 22 native starter assertions passed in Desktop; supplied diagnostics reconcile source and parsed rows with no missing or duplicate IDs.
 - Source and parsed row counts must match. Missing and duplicate SharePoint IDs must be investigated.
 - Review flags do not remove incidents. Inspect `ISIR_Exceptions` locally.

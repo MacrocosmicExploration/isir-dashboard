@@ -9,3 +9,7 @@
 - Record changes and required Desktop replacement steps in CHANGELOG.md. Avoid force pushes and preserve user edits.
 - Never open links shown in the user's screenshots. This is an explicit user preference.
 - Keep the repository private unless the user explicitly requests a visibility change.
+
+- The user replaced User-at-Fault prefix attribution with ReporterEmail -> GLOBAL_EMPLOYEE.EMAILADDRESS -> first token of ACTIVEDIRECTORYDISPLAYNAME. Treat this as Reporter Subsidiary unless the owner confirms broader incident attribution.
+- Preserve nonblank incident-level organization snapshots across runs. Normal Power BI refreshes cannot persist prior output; proposals require external storage. Keep new matches separate until an approved writer saves them.
+- Do not present a current-directory backfill as incident-time history. Record extraction date, capture time, match identity and capture basis for saved assignments.

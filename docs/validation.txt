@@ -1,3 +1,12 @@
+REPORTER ORGANIZATION CHECKPOINT - 2026-10-29
+
+Four new M files passed syntax validation. Their 12 synthetic self-tests must run
+in Power BI Desktop. No employee CSV was provided or accessed here. No source
+records, SharePoint columns or automation were changed by this code update.
+The matching queries prepare proposals and preserve already saved snapshots when
+those source columns exist. They do not persist new assignments. Read
+reporter-org-setup.txt before interpreting any proposal as a frozen value.
+
 MODEL CHECKPOINT - 2026-10-29
 
 USER-REPORTED DESKTOP VALIDATION
