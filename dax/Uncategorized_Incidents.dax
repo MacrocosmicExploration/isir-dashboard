@@ -1,0 +1,5 @@
+// Preserves current filters, including the selected reporting period.
+Uncategorized Incidents =
+COUNTROWS (
+    FILTER ( FactIncident, FactIncident[IsCategoryMissing] = TRUE () )
+)

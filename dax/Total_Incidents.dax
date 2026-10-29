@@ -1,0 +1,2 @@
+// Create with Modeling > New measure. Paste this entire file.
+Total Incidents = COUNTROWS ( FactIncident )

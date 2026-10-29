@@ -1,3 +1,29 @@
+MODEL CHECKPOINT - 2026-10-29
+
+USER-REPORTED DESKTOP VALIDATION
+- All 22 original native self-tests passed.
+- Source and parsed row counts reconcile; no missing/duplicate source or list IDs.
+- The five-digit example year was a transcription typo, not a source defect.
+- The remaining occurrence-date issue is a missing snapshot label.
+- Subsidiary candidates have poor coverage and include non-code tokens. They
+  are diagnostic only and excluded from the new reporting model.
+- Original tests and diagnostics have not been weakened to make review flags pass.
+
+NEW CODE VALIDATION
+- FactIncident, DimDate, DimCategory and ISIR_SubsidiaryAudit passed Microsoft's
+  M syntax parser. The model is not claimed to be runtime-tested here.
+- The original six M files remain unchanged.
+- New DAX measures are ready for Desktop validation, not yet executed here.
+- Required verification and expected current totals are in model-setup.txt.
+
+OPEN REPORTING DECISIONS
+- Fiscal-year start and naming convention.
+- Reporting meaning of Cancel and other workflow states.
+- Stable affected-person identity or approved incident organization mapping.
+- Reporting cutoff, historical coverage, and asset quantity completeness.
+
+--- Original preparation record follows ---
+
 PREPARATION VALIDATION - 2026-10-29
 
 All six query files were parsed successfully by Microsoft's

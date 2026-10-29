@@ -1,0 +1,5 @@
+// Counts incidents, not the number of lost items.
+Asset Loss Incidents =
+COUNTROWS (
+    FILTER ( FactIncident, FactIncident[HasRecordedAssetLoss] = TRUE () )
+)

@@ -1,0 +1,5 @@
+// Uses the current filter context; count only rows with an occurrence date.
+Dated Incidents =
+COUNTROWS (
+    FILTER ( FactIncident, NOT ISBLANK ( FactIncident[IncidentDate] ) )
+)

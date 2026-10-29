@@ -2,7 +2,32 @@
 
 Power Query transformations and validation for an incident-reporting Power BI proof of concept. This repository is the working source for future ISIR queries, DAX measures, and setup instructions.
 
-## Copy a query into Power BI
+## Current step: load the reporting model
+
+The original 22 self-tests passed in Power BI Desktop, as reported by the user.
+The source and parsed tables reconcile, and source IDs passed the missing/duplicate checks.
+
+**Continue with [the exact model setup steps](docs/model-setup.txt).** Add these queries in order:
+
+| Order | Query | Enable load | Code |
+| --- | --- | --- | --- |
+| 1 | `FactIncident` | **ON** | [FactIncident.pq](powerquery/FactIncident.pq) |
+| 2 | `DimDate` | **ON** | [DimDate.pq](powerquery/DimDate.pq) |
+| 3 | `DimCategory` | **ON** | [DimCategory.pq](powerquery/DimCategory.pq) |
+| 4 | `ISIR_SubsidiaryAudit` | OFF | [ISIR_SubsidiaryAudit.pq](powerquery/ISIR_SubsidiaryAudit.pq) |
+
+Only those three model tables have Enable load checked. Keep the existing staging,
+validation, profile, exception, inventory and self-test queries unloaded. Leave
+`fnISIRTransform` as a function. Keep Include in report refresh enabled on the
+three model tables. Do not delete the staging queries.
+
+Create the six measures in [dax/](dax/) one at a time with **Modeling > New measure**,
+starting with [Total Incidents](dax/Total_Incidents.dax). DAX does not go in Power Query.
+The setup file includes relationships, sorting, expected QA totals, and the next
+source-owner decisions. The four new M queries are syntax checked; their Desktop
+execution and the new DAX measures still need validation in the user's model.
+
+## Original starter queries (already installed)
 
 1. Open a query file from the table below in GitHub. Click **Copy raw file** in the file toolbar, or open **Raw** and copy the entire file.
 2. In Power BI Desktop, select **Transform data > Home > New Source > Blank Query**.
@@ -25,11 +50,11 @@ The function's invocation screen is expected; do not invoke it manually. Create 
 
 ## Current checkpoint
 
-- All six queries passed Microsoft's Power Query syntax parser.
-- Native M execution and live-source reconciliation are pending in Power BI Desktop.
+- The six original and four new queries passed Microsoft's Power Query syntax parser.
+- The user reported all 22 native starter assertions passed in Desktop; supplied diagnostics reconcile source and parsed rows with no missing or duplicate IDs.
 - Source and parsed row counts must match. Missing and duplicate SharePoint IDs must be investigated.
 - Review flags do not remove incidents. Inspect `ISIR_Exceptions` locally.
-- Next: verify the diagnostic results, then build the final model, dimensions, measures, and report pages.
+- Next: install and verify the three reporting tables, then resolve organization mapping and reporting definitions before the final pages.
 
 See [complete setup instructions](docs/setup.txt), [validation status](docs/validation.txt), and [change history](CHANGELOG.md).
 
@@ -38,7 +63,7 @@ See [complete setup instructions](docs/setup.txt), [validation status](docs/vali
 - One source row represents one incident. Keep all reporting-ready rows, including incidents abroad involving US subsidiaries.
 - Use curated category and asset fields. AI suggestions do not overwrite them.
 - Parse the recorded incident date without substituting the submission date or guessing ambiguous formats.
-- Derive subsidiary candidates from the first token of the user-at-fault display value; verify the candidate mapping before reporting.
+- First tokens are diagnostic candidates only. The observed source is incomplete and includes non-code tokens; do not use them directly as subsidiary labels. The model excludes these candidates pending reviewed mapping.
 - Keep snapshot geography separate from workplace location. Department mapping remains pending.
 - Parse recognized USB, badge, and document quantities in `LostOther`. Avoid double-counting USBs recorded in both fields.
 - Preserve nulls and flag conflicting or invalid counts. `KnownLostAssetCount` is a recorded partial quantity until completeness rules are confirmed.

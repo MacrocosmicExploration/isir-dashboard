@@ -1,0 +1,3 @@
+// Partial recorded quantity; never label this as a reconciled total of all lost assets.
+// Includes recognized phone, PC, USB, access-key/badge and document/drawing quantities.
+Known Recorded Lost Items = SUM ( FactIncident[KnownLostAssetCount] )

@@ -1,3 +1,7 @@
+CONTINUATION: After the original self-tests and diagnostics, follow model-setup.txt.
+Only FactIncident, DimDate and DimCategory should load into the model.
+The instructions below document the original staging/diagnostic package.
+
 ISIR POWER QUERY STARTER - 2026-10-29
 Purpose: build and validate the first reporting transformation layer.
 This package contains code and synthetic test fixtures only. It contains no

@@ -1,0 +1,8 @@
+// Removes occurrence-date filtering but retains category and other filters.
+// Label cards explicitly as all dates so they are not mistaken for period totals.
+Undated Incidents (All Dates) =
+CALCULATE (
+    [Total Incidents],
+    REMOVEFILTERS ( DimDate ),
+    FactIncident[IncidentDate] = BLANK ()
+)

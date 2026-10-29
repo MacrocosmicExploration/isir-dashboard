@@ -1,0 +1,114 @@
+ISIR MODEL SETUP - STEP 2
+
+The existing six queries do not need replacement. The user reported all 22
+native self-tests passed. Add the four new queries and six measures below.
+The new model queries have been syntax checked; Desktop execution remains pending.
+
+1. SAVE A BACKUP OF THE WORKING PBIX.
+
+2. CREATE FOUR BLANK QUERIES IN THIS ORDER.
+   Power Query Editor > Home > New Source > Blank Query > Advanced Editor.
+   Copy the corresponding file from GitHub and use the exact name:
+   a) FactIncident          powerquery/FactIncident.pq
+   b) DimDate               powerquery/DimDate.pq
+   c) DimCategory           powerquery/DimCategory.pq
+   d) ISIR_SubsidiaryAudit   powerquery/ISIR_SubsidiaryAudit.pq
+   Do not invoke fnISIRTransform manually. Do not change stg_ISIR_Raw.
+
+3. ENABLE LOAD: CHECK ONLY THESE THREE ISIR TABLES.
+   FactIncident = ON
+   DimDate = ON
+   DimCategory = ON
+
+   All ISIR helpers = OFF:
+   stg_ISIR_Raw, stg_ISIR_Parsed, ISIR_SelfTest, ISIR_Validation,
+   ISIR_FieldProfile, ISIR_Exceptions, ISIR_SubsidiaryAudit, and any schema/column
+   inventory or temporary source-count queries. fnISIRTransform is a function;
+   leave it as a function (no model table to load).
+
+   Right-click the query name to toggle Enable load. Do not delete helpers.
+   Leave Include in report refresh enabled for the three model tables.
+   Disable-load staging queries still run when a loaded query depends on them.
+   These instructions apply to the ISIR query set, not unrelated existing tables.
+   If a query already feeds a visual, disabling load removes that model table;
+   repoint that visual to the new model before expecting it to work.
+
+4. CLICK CLOSE & APPLY, THEN BUILD TWO RELATIONSHIPS IN MODEL VIEW.
+   DimDate[Date] (1) -> FactIncident[IncidentDate] (*)
+   DimCategory[CategoryKey] (1) -> FactIncident[CategoryKey] (*)
+   Both active, cross-filter direction Single (dimension to fact).
+   Delete unintended auto-created relationships among these three tables first.
+   Do not create an active relationship to SubmittedDate.
+
+5. CONFIGURE THE DATE TABLE AND DISPLAY FIELDS.
+   Select DimDate > Table tools > Mark as date table > choose Date.
+   If Calendar options is shown first, use its Mark as date table option.
+   Select DimDate[MonthName] > Column tools > Sort by column > MonthNumber.
+   Select DimDate[YearMonth] > Sort by column > YearMonthSort.
+   Select DimDate[Quarter] > Sort by column > QuarterNumber.
+   Use the actual date column, not an automatically generated Date Hierarchy.
+   Fiscal fields are intentionally pending confirmation of the start month and
+   whether an FY label identifies the starting or ending calendar year.
+
+   Hide technical fields from report view: FactIncident[CategoryKey],
+   FactIncident[IncidentCategoryRaw], DimCategory[CategoryKey], and date sort
+   columns. Use DimCategory[Category] for slicers and chart labels.
+   Set IncidentID and SourceItemID to Don't summarize; hide them from overview
+   users if they are only needed for later controlled drill-through.
+
+6. ADD THE SIX MEASURES.
+   Select FactIncident, then Modeling > New measure. Paste one .dax file at a time.
+   Start with Total_Incidents.dax, then add the other five in any order.
+   Do not paste DAX in Power Query's Advanced Editor.
+   Format these measures as whole numbers.
+
+7. BUILD A TEMPORARY QA REPORT PAGE WITH NO SLICERS OR FILTERS.
+   Cards at the supplied checkpoint should show:
+   Total Incidents = 178
+   Dated Incidents = 177
+   Undated Incidents (All Dates) = 1
+   Asset Loss Incidents = 152
+   Uncategorized Incidents = 5
+   Known Recorded Lost Items = no expected total supplied yet; reconcile later.
+
+   Create a column chart: DimDate[YearMonth] on X, Dated Incidents on Y.
+   Sort YearMonth ascending. The dated rows across the chart should total 177.
+   Create a category bar chart: DimCategory[Category] and Total Incidents.
+   All category bars should total 178, including Uncategorized = 5.
+   Select a category and check that the monthly chart and cards respond.
+   Clear all selections afterward.
+
+   A date slicer excludes the one undated incident from Total Incidents for that
+   period. The explicitly labeled all-dates undated card remains visible.
+   Do not substitute SubmittedDate to force the undated incident into a month.
+   No-data periods remain blank; a zero is not proof of complete reporting.
+
+8. TARGETED SOURCE REVIEW, WITHOUT FILTERING INCIDENTS OUT.
+   - In ISIR_Exceptions, filter IncidentDateStatus to values other than Parsed.
+     Inspect the one row's snapshot locally. The supplied five-digit year was
+     only a chat typo; the remaining row has Missing label, a separate issue.
+     Determine whether it is a valid incident needing a date or another kind of
+     record. Corrections belong in the approved curated source workflow.
+   - Open ISIR_SubsidiaryAudit. Report its small aggregate table. Check locally
+     whether User at Fault is actually blank on those rows. If populated,
+     provide two anonymized formatting examples with names replaced by [NAME].
+     Never treat an arbitrary first name or other first token as a subsidiary.
+   - Ask the source owner what Task Phase = Cancel means and whether those
+     records count as reportable incidents. All remain included for now, as
+     previously instructed. CaseState and TaskPhase are separate workflows;
+     equal marginal counts do not prove they refer to the same records.
+   - Confirm fiscal start and FY naming convention, reporting-complete-through
+     date, and whether both periods have complete coverage before YoY work.
+
+NEXT BUILD
+   Final category grouping, subsidiary/department enrichment, fiscal and matched-
+   period YoY measures, then the two presentation pages and controlled geography.
+   Department enrichment needs a stable affected-person identifier or a reviewed
+   incident-to-organization mapping. ReporterEmail is not assumed to identify
+   the affected employee. Current employee department is not silently applied
+   to historical incidents. Map incident geography separately from subsidiary.
+
+References:
+https://learn.microsoft.com/en-us/power-bi/connect-data/refresh-include-in-report-refresh
+https://learn.microsoft.com/en-us/power-bi/transform-model/desktop-date-tables
+https://learn.microsoft.com/en-us/power-bi/guidance/star-schema
