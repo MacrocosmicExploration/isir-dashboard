@@ -12,6 +12,14 @@ not write to it. Saving new assignments is a manual POC step. The extraction and
 matching logic is automated; persistence is not yet scheduled or automatic.
 Do not overwrite the saved table with a full freshly recomputed directory join.
 
+TWO DIFFERENT FILES
+stg_GLOBAL_EMPLOYEE_Raw reads your existing GLOBAL_EMPLOYEE CSV export.
+stg_ISIR_OrgSnapshot_Raw reads a separate ISIR_OrgSnapshot.xlsx workbook that you
+create from proposed incident assignments in section D. It does NOT read the CSV.
+Leave SnapshotFilePath = "" on the first run until that workbook has been saved.
+If you put the employee CSV path there by mistake, use docs/snapshot-path-recovery.txt.
+There is no need to reinstall the queries or change the original SharePoint list.
+
 MATCHING RULES
 1. Keep only employee rows whose trimmed, case-insensitive EMPLOYEE_STATUS is Active.
    This filters directory eligibility, never the incident population.
@@ -89,7 +97,8 @@ D. SAVE THE FIRST ASSIGNMENTS AS LITERAL VALUES
    and CapturedAtUTC as text (ISO UTC with Z). Keep both email columns as text.
    CapturedAtUTC records when the proposal was generated, not the workbook save time.
 5. In stg_ISIR_OrgSnapshot_Raw Advanced Editor, replace only the empty value of
-   SnapshotFilePath with the workbook's full local or network path. M uses literal
+   SnapshotFilePath with this NEW SNAPSHOT workbook's full local or network path.
+   Do not use the GLOBAL_EMPLOYEE CSV path. M uses literal
    backslashes, e.g. SnapshotFilePath = "C:\Work\ISIR\ISIR_OrgSnapshot.xlsx"
    (Use your actual path with normal single backslashes in the M string.)
    The query reads the named Excel TABLE, not a worksheet or suggested range.

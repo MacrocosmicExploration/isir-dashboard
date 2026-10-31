@@ -1,5 +1,12 @@
 # Change history
 
+## 2026-10-30 — Snapshot path recovery instructions
+
+- Clarified that stg_GLOBAL_EMPLOYEE_Raw reads the employee CSV while stg_ISIR_OrgSnapshot_Raw reads a separate saved assignment Excel workbook.
+- Added a focused first-capture recovery guide: restore the empty snapshot path, validate proposals, copy values into a named Excel table, then connect and reconcile saved assignments.
+- Explained expected empty staging and Unassigned values before the first capture, and how to preserve an already saved workbook.
+- Desktop action: change only SnapshotFilePath and follow docs/snapshot-path-recovery.txt. No query replacements, matching changes or new tests are needed for this documentation update. The prior 30 native organization tests and workbook read-back still require Desktop verification.
+
 ## 2026-10-29 — Active-only matching, TEL aliases, and separate POC snapshot
 
 - Adopted the user's source rule: only EMPLOYEE_STATUS = Active rows are eligible. Multiple active matches remain blocked.

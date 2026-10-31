@@ -1,0 +1,136 @@
+RECOVER FROM AN EMPLOYEE CSV PATH IN THE SNAPSHOT QUERY
+
+WHY THIS FAILED
+There are two files with different purposes:
+
+stg_GLOBAL_EMPLOYEE_Raw
+  Reads: your existing GLOBAL_EMPLOYEE.csv export.
+  Purpose: find current eligible employees and propose subsidiary assignments.
+
+stg_ISIR_OrgSnapshot_Raw
+  Reads: a separate ISIR_OrgSnapshot.xlsx workbook.
+  Purpose: preserve saved incident assignments across future employee changes.
+  Required Excel TABLE name: ISIR_OrgSnapshot.
+
+The snapshot query calls Excel.Workbook and selects that named table. A CSV is
+not an Excel workbook, even if Excel can open it. Converting the employee export
+to .xlsx is also not the fix: it has employee rows, not saved incident assignments.
+Power BI does not create or write the snapshot workbook for you.
+
+You can recover without reinstalling the queries. Stay in Transform Data for this
+checkpoint. If you already created and saved a real snapshot workbook earlier,
+reuse it: go directly to step 4 and reconnect that existing file. Do not discard
+saved history or recreate assignments from the current employee directory.
+
+1. RESTORE THE EMPTY FIRST-RUN SNAPSHOT
+If you have not yet saved the snapshot workbook:
+- Select stg_ISIR_OrgSnapshot_Raw in the left query pane.
+- Open Home > Advanced Editor.
+- Change only the SnapshotFilePath line to exactly:
+
+    SnapshotFilePath = "",
+
+- Keep the comma and all the remaining code. Click Done, then Refresh Preview.
+- Expected: eight column headers and zero rows. This empty table is intentional.
+- Leave the working CSV path in stg_GLOBAL_EMPLOYEE_Raw unchanged. That query
+  must retain EMAILADDRESS, ACTIVEDIRECTORYDISPLAYNAME and EMPLOYEE_STATUS as Text.
+
+Do not enter a folder path, the CSV path, or a file path that does not exist yet.
+If FactIncident / DimReporterSubsidiary were installed early, keep them. All
+subsidiaries being Unassigned before first capture is expected, not lost data.
+
+2. CHECK THE PROPOSALS
+- Open ISIR_ReporterOrgSelfTest. The updated suite should show 30 PASS rows.
+- Refresh ISIR_ReporterOrgPreview, then ISIR_ReporterOrgValidation.
+- Source and preview counts should agree (178 each at the known checkpoint),
+  with row-count difference zero. New source incidents can increase both counts.
+- Before first capture, Existing snapshots kept should be zero. The number of
+  proposed fills depends on the new Active-only and TEL-domain matching rules;
+  it is not required to equal the previous 163.
+- In Preview, inspect MatchMethod = TEL domain alias locally, then remove the
+  temporary filter step so the complete preview is restored. Review unresolved
+  cases in ISIR_ReporterOrgReview; do not delete those incidents.
+
+If any of these queries still errors, stop here and report the exact query name
+and error message/details, redacting names, emails and private paths. Do not
+replace other queries at random or continue with a blank/error export.
+
+3. CREATE THE SEPARATE SNAPSHOT WORKBOOK
+- Open ISIR_ReporterOrgSnapshotAdditions. It should contain eight columns and
+  one row per eligible proposed assignment. Record the actual row count.
+- For this current small dataset, click the table icon at the upper-left corner
+  of the preview grid and choose Copy Entire Table.
+- Open a NEW blank workbook in Excel. Paste the copied values and headers into A1.
+  If a Paste Special choice appears, choose a plain text/values option. This must
+  be a saved table of literal values, not a refreshing connection to the directory.
+- Confirm all eight headers and all expected data rows are present; no extra
+  title or row-number column should be included.
+- Select the complete range, press Ctrl+T, check My table has headers, click OK.
+- Click inside the table. Under Table Design > Table Name, set exactly:
+
+    ISIR_OrgSnapshot
+
+- Changing the worksheet/tab name is not enough. This must be the Excel TABLE name.
+- Save the NEW workbook as ISIR_OrgSnapshot.xlsx in your approved work folder,
+  with file type Excel Workbook (*.xlsx). Save and close Excel.
+
+Required headers, unchanged:
+SourceItemID
+ReporterSubsidiarySnapshot
+ReporterEmailAtCapture
+ReporterMatchedEmailAtCapture
+ReporterOrgCapturedAtUTC
+ReporterOrgDirectoryExtractDate
+ReporterOrgCaptureBasis
+ReporterOrgMatchMethod
+
+Keep SourceItemID as whole numbers, ReporterOrgDirectoryExtractDate as a date,
+and the other fields as text. The UTC capture value includes its trailing Z;
+retain it as text. The directory extract date remains 2026-10-26 for this export.
+The capture timestamp is when the proposal was generated, not the Excel save time.
+Do not put this data-bearing workbook or the employee CSV in GitHub.
+If there are zero additions, do not invent rows; report the validation counts.
+If row counts exceed the Power Query preview limit, use a full export instead
+of this preview-copy method.
+
+4. POINT THE SNAPSHOT QUERY TO THE NEW WORKBOOK
+- Return to stg_ISIR_OrgSnapshot_Raw > Advanced Editor.
+- Replace only the empty path value with the FULL path to ISIR_OrgSnapshot.xlsx.
+  Example only; substitute your actual path:
+
+    SnapshotFilePath = "C:\Work\ISIR\ISIR_OrgSnapshot.xlsx",
+
+- Keep exactly one pair of double quotes around the path and keep the comma.
+  Windows Copy as path may include quotes already; do not double them.
+  Power Query M uses normal single backslashes in paths.
+- Click Done, then Refresh Preview. It should now show the saved assignment rows.
+- Keep this configured workbook path on later updates. Do not reset it to empty.
+
+If Excel.Workbook errors, check that the selected file really is the saved .xlsx.
+If the error says the key did not match any rows in the table, check Table Design
+> Table Name in Excel: it must be ISIR_OrgSnapshot, not Table1 or just a sheet name.
+For a missing file error, check the full filename/path and that the file was saved.
+For other errors, provide the query name and exact error rather than guessing.
+
+5. VERIFY THAT THE SAVED ASSIGNMENTS ARE BEING READ
+- Refresh ISIR_ReporterOrgPreview and ISIR_ReporterOrgValidation again.
+- For unchanged incident and employee data, after saving all eligible additions:
+  Existing snapshots kept = the number of rows you saved.
+  New proposed fills = 0.
+  Source rows = preview rows; row-count difference = 0.
+- Any unresolved incidents remain present and unassigned. They are not deleted.
+- Refresh FactIncident and DimReporterSubsidiary. Their subsidiary values now
+  come from the saved workbook. Total incident rows remain unchanged.
+
+Send the self-test result, the saved row count, and the refreshed validation counts
+before moving to relationships. Do not Close & Apply until this checkpoint works.
+No new M code or extra queries are required by this recovery guide.
+
+WHY SAVE A FILE?
+The employee CSV describes the directory at extraction time. The snapshot workbook
+stores the chosen subsidiary for each SourceItemID. Later refreshes read that saved
+assignment so a directory change cannot silently rewrite an old incident's value.
+Creating/appending this file is manual for the POC; the future pipeline can replace
+that persistence step without modifying the original SharePoint list.
+
+Reference: https://learn.microsoft.com/en-us/power-query/connectors/excel

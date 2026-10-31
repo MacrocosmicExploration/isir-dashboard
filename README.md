@@ -10,6 +10,19 @@ not yet been built. The SharePoint source list will remain unchanged.
 **Follow [the complete current instructions](docs/reporter-org-setup.txt).** They
 replace the earlier proposal to add snapshot columns to SharePoint.
 
+**Already installed the queries but entered the employee CSV in the snapshot
+path? Follow [this recovery guide](docs/snapshot-path-recovery.txt).** You do not
+need to reinstall the queries. These are two separate files:
+
+| Query | File it reads | First-time setup |
+| --- | --- | --- |
+| `stg_GLOBAL_EMPLOYEE_Raw` | Your existing GLOBAL_EMPLOYEE `.csv` export | Keep the existing employee CSV connection. |
+| `stg_ISIR_OrgSnapshot_Raw` | A separate `ISIR_OrgSnapshot.xlsx` workbook containing saved incident assignments | Leave `SnapshotFilePath = ""` until you create this workbook from `ISIR_ReporterOrgSnapshotAdditions`. |
+
+Opening a CSV in Excel does not make it an Excel workbook. Do not enter the
+employee CSV path in the snapshot query or convert the employee export into the
+snapshot. The snapshot needs incident assignments keyed by `SourceItemID`.
+
 - Match only `EMPLOYEE_STATUS = Active` rows, normalizing case and whitespace.
 - Prefer a unique exact email. With zero active exact matches, try only the same
   local part under `tel.com` / `us.tel.com`; label this fallback separately.
@@ -44,7 +57,8 @@ function queries. The original 22-test `ISIR_SelfTest` is unchanged. New code ha
 passed M syntax checks; the new native tests and workbook read-back are pending.
 
 The snapshot staging query starts empty. After saving the workbook, set its
-`SnapshotFilePath` to the saved file. Keep that configured connection on future
+`SnapshotFilePath` to the saved **snapshot `.xlsx` file**, not the employee CSV.
+Keep that configured connection on future
 updates. The named Excel table must be `ISIR_OrgSnapshot`.
 
 ## Final load configuration
